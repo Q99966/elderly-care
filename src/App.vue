@@ -1,0 +1,83 @@
+<template>
+  <div class="app-container">
+    <div class="global-header" v-if="!$route.meta.hideLayout">
+      <div class="status-row">
+        <span class="tag">🟢 设备在线</span>
+        <div class="right-info">
+          <span>📶 -70dBm</span>
+          <!-- <span class="battery">🔋 85%</span> -->
+        </div>
+      </div>
+      <div class="location-row">
+        <span class="icon">📍</span>
+        <span class="text">{{ locationAddr }}</span>
+      </div>
+    </div>
+
+    <div class="content">
+      <router-view></router-view>
+    </div>
+    <BottomNav v-if="!$route.meta.hideLayout" />
+
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import BottomNav from '@/components/Layout/BottomNav.vue'
+import { getCurrentLocation } from '@/utils/location'
+
+const route = useRoute()
+const locationAddr = ref('正在获取定位...') // 初始状态
+
+onMounted(async () => {
+  try {
+    locationAddr.value = await getCurrentLocation()
+  } catch (e) {
+    locationAddr.value = '定位获取失败'
+  }
+})
+
+</script>
+
+
+<style>
+/* 全局样式 */
+body { margin: 0; padding: 0; background-color: #f2f4f8; font-family: -apple-system, sans-serif; }
+* { box-sizing: border-box; }
+
+.app-container { 
+  display: flex; flex-direction: column; height: 100vh; max-width: 600px; margin: 0 auto; 
+  background: #f2f4f8; position: relative;
+}
+
+/* --- 顶部状态栏 --- */
+.global-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  max-width: 600px; margin: 0 auto;
+  height: 100px;
+  background: linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%);
+  color: white;
+  padding: 15px 20px;
+  box-shadow: 0 4px 12px rgba(58, 123, 213, 0.3);
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+.status-row { display: flex; justify-content: space-between; font-size: 13px; opacity: 0.9; margin-bottom: 10px; }
+.location-row { display: flex; align-items: center; font-size: 15px; font-weight: bold; }
+.location-row .icon { margin-right: 6px; }
+
+/* --- 内容区 --- */
+.content { 
+  flex: 1; 
+  /* overflow-y: auto;  */
+  /* 注意：这里我们给 content 一个顶部 padding，防止被 header 遮挡。
+     但如果是登录页，这个 padding 会导致上面有空白。
+     不过因为登录页使用了 fixed 覆盖全屏样式，所以不受影响。 */
+  padding-top: 110px; 
+  padding-bottom: 70px; 
+  /* padding-left: 15px; padding-right: 15px; */
+}
+
+</style>
